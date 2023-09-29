@@ -10,6 +10,7 @@ class Server {
         this.port = process.env.PORT;
 
         this.paths = {
+            usuarios: '/api/usuarios'
 
         }
 
@@ -33,7 +34,20 @@ class Server {
     // await Catalogo.sync({alter: true});
     }
 
+    middleware() {
+
+        // Cors
+        this.app.use(cors());
+
+        // Lectura y parseo
+        this.app.use(express.json());
+
+        this.app.use(express.static('public'));
+
+    }
+
     routes() {
+        this.app.use(this.paths.usuarios, require('../router/ruta_user'));
         //this.app.use(this.paths.auth, require('../routes/auth.js'));
         
 
