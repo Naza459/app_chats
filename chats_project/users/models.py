@@ -1,4 +1,6 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
@@ -69,7 +71,7 @@ class UserCustomer(AbstractBaseUser):
     last_name = models.CharField(max_length=200, null=True)
     ci = models.CharField(max_length=255, unique=True)
     phone = models.TextField()
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     rol = models.ForeignKey(Roles, related_name='rol',on_delete=models.CASCADE, null=True)
     created = models.DateTimeField(default=timezone.now, editable=False)
     modified = models.DateTimeField(default=timezone.now, editable=False)
@@ -89,16 +91,21 @@ class Client(models.Model):
     email = models.EmailField(unique=True, null=False)
     first_name = models.CharField(max_length=200, null=True)
     last_name = models.CharField(max_length=200, null=True)
+    password = models.TextField(null=True)
+    last_login = models.DateTimeField(null=True)
     ci = models.CharField(max_length=255, unique=True)
     phone = models.TextField()
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     rol = models.ForeignKey(Roles,on_delete=models.CASCADE, null=True)
     created = models.DateTimeField(default=timezone.now, editable=False)
     modified = models.DateTimeField(default=timezone.now, editable=False)
     
-
     class Meta:
         db_table = 'Clientes'
         app_label = 'users'
         
-        
+@receiver(pre_save, sender=Client)
+def check_unique_ci_client(sender, instance, **kwargs):
+    # Verificar si ya existe un registro en la tabla UserCustomer con la misma cédula (ci)
+    if UserCustomer.objects.filter(ci=instance.ci).exists():
+        raise ValueError('Ya existe un usuario con esta cédula.')

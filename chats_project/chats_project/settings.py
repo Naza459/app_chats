@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django_filters',
     'corsheaders',
     'users',
+    'channels',
     'chats',
 ]
 
@@ -60,12 +61,18 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'channels.middleware.WebSocketMiddleware'
 ]
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:4200',
 ]
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',  # Cambia a tu backend preferido
+    },
+}
 
 
 ROOT_URLCONF = 'chats_project.urls'

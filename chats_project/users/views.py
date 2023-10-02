@@ -80,6 +80,50 @@ class LogoutView(APIView):
 
         return Response({'message': 'Cierre de sesión exitoso'}, status=status.HTTP_200_OK)
 
+class LoginClientViewSet(APIView):
+    authentication_classes = ()
+    
+    def post(self, request, *args, **kwargs):
+        # Verificar si el usuario ya está autenticado
+        #if request.user.is_authenticated:
+        #    return Response({'message': 'El usuario ya está autenticado'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            username = Client.objects.get(username=request.data.get("username"))
+        except Client.DoesNotExist:
+            return Response({'message': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        password = username.password
+        print('username: ',username.username)
+        print('password: ', password)
+        
+        if username.last_login is not None:
+            return Response({'message': 'El usuario ya está autenticado'}, status=status.HTTP_400_BAD_REQUEST)
+            
+
+        if username and password and check_password(request.data["password"], password):
+            username.last_login = timezone.now()
+            username.save()
+            return Response({'access': True, 'data': ClientListSerializer(instance=username).data}, status=status.HTTP_200_OK)
+        # Si no, devolver un mensaje de error
+        else:
+            return Response({'message': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class LogoutClientView(APIView):
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request, id, *args, **kwargs): # Añadir el argumento id
+        try:
+            user = Client.objects.get(id=id)
+        except Client.DoesNotExist:
+            return Response({'message': 'El usuario no existe'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Actualizar el campo is_online del usuario
+        user.last_login = None
+        user.save()
+
+        return Response({'message': 'Cierre de sesión exitoso'}, status=status.HTTP_200_OK)
+
 
 
 class UserCustomerViewSet(ModelViewSet):
@@ -95,13 +139,13 @@ class UserCustomerViewSet(ModelViewSet):
 
         if serializer.is_valid():
             if serializer.validated_data['email'].startswith('sotomotors'):
-                email = serializer.validated_data['email']
-            serializer.validated_data['password'] = make_password(serializer.validated_data.get('password'))
-            serializer.save()
-            return Response(UserCustomerListSerializer(instance=serializer.instance).data, status=status.HTTP_200_OK)
+                serializer.validated_data['password'] = make_password(serializer.validated_data.get('password'))
+                serializer.save()
+                return Response(UserCustomerListSerializer(instance=serializer.instance).data, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'El email debe comenzar con sotomotors.'}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     def update(self, request, *args, **kwargs):
         user = self.get_object()
         serializer = UserCustomerSerializer(user, data=request.data, partial=True)
@@ -136,13 +180,17 @@ class ClientViewSet(ModelViewSet):
     queryset = Client.objects.all()
     serializer_class = ClientListSerializer
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('id', 'username', 'password', 'email', 'first_name', 'last_name', 'rol', 'is_active',)
+    filterset_fields = ('id', 'username', 'email', 'first_name', 'last_name', 'rol', 'is_active',)
 
 
     def create(self, request, *args, **kwargs):
         serializer = ClientSerializer(data=request.data)
 
         if serializer.is_valid():
+            ci = serializer.validated_data.get('ci')
+            if UserCustomer.objects.filter(ci=ci).exists():
+                raise serializers.ValidationError('Ya existe un usuario con esta cédula.')
+                
             serializer.validated_data['password'] = make_password(serializer.validated_data.get('password'))
             serializer.save()
             return Response(ClientListSerializer(instance=serializer.instance).data, status=status.HTTP_200_OK)

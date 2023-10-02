@@ -15,10 +15,17 @@ class RolListSerializer(serializers.ModelSerializer):
         fields = ('__all__')
         
 class UserCustomerSerializer(serializers.ModelSerializer):
-    
+    email = serializers.CharField(max_length=200)
+
+    def validate_email(self, value):
+        if value.startswith('sotomotors'):
+            return value
+        else:
+            raise serializers.ValidationError('El email debe comenzar con sotomotors.')
+
     class Meta:
         model = UserCustomer
-        fields = ('__all__')
+        fields = '__all__'
 
 class UserCustomerListSerializer(serializers.ModelSerializer):
     rol = RolListSerializer(many=False, read_only=True)
