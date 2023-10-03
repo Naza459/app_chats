@@ -8,6 +8,13 @@ class ConversationsConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         # Lógica al conectar un cliente WebSocket
         await self.accept()
+        
+        await self.send(text_data=json.dumps({
+            'type': 'connection',
+            'data': {
+                'message': "Connected now"
+            }
+        }))
 
     async def disconnect(self, close_code):
         # Lógica al desconectar un cliente WebSocket

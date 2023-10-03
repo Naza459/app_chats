@@ -22,5 +22,6 @@ from chats_project import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
+    path('chats/', include('chats.urls')),
     path('ws/conversations/', ConversationsConsumer.as_asgi()),  # Agrega la ruta WebSocket aquí
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

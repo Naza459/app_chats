@@ -3,6 +3,7 @@ attrs==23.1.0
 autobahn==23.6.2
 Automat==22.10.0
 beautifulsoup4==4.12.2
+bidict==0.22.1
 bs4==0.0.1
 certifi==2023.5.7
 cffi==1.16.0
@@ -20,6 +21,7 @@ djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.0
 filelock==3.6.0
 googlemaps==4.10.0
+h11==0.14.0
 hyperlink==21.0.0
 idna==3.4
 incremental==22.10.0
@@ -37,9 +39,12 @@ PyJWT==2.8.0
 PyMySQL==1.0.2
 pyOpenSSL==23.2.0
 python-decouple==3.8
+python-engineio==4.7.1
+python-socketio==5.9.0
 pytz==2023.3.post1
 requests==2.31.0
 service-identity==23.1.0
+simple-websocket==0.10.1
 six==1.16.0
 sockets==1.0.0
 soupsieve==2.4.1
@@ -53,4 +58,5 @@ tzdata==2022.1
 urllib3==2.0.3
 virtualenv==20.14.1
 websocket-client==1.6.3
+wsproto==1.2.0
 zope.interface==6.0
