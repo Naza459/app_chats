@@ -61,7 +61,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'channels.middleware.WebSocketMiddleware'
+    #'channels.middleware.WebSocketMiddleware',
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -69,10 +69,17 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',  # Cambia a tu backend preferido
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1","6379")],
+            "capacity": 1500,
+            "expiry": 60,
+            #"symmetric_encryption_keys": [SECRET_KEY],
+        },
     },
 }
+
 
 
 ROOT_URLCONF = 'chats_project.urls'
@@ -94,6 +101,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'chats_project.wsgi.application'
+
+ASGI_APPLICATION = "chats_project.asgi.application"
 
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')

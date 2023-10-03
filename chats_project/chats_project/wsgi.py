@@ -13,8 +13,9 @@ from django.core.wsgi import get_wsgi_application
 from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
+from channels.security.websocket import AllowedHostsOriginValidator
 from django.urls import path
-from channels.middleware import WebsocketMiddlewareStack
+#from channels.middleware import WebsocketMiddlewareStack
 from chats.consumers import ConversationsConsumer
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'chats_project.settings')
@@ -24,7 +25,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'chats_project.settings')
 application = ProtocolTypeRouter(
     {
         "http": get_asgi_application(),
-        "websocket": AuthMiddlewareStack(
+        "websocket": AllowedHostsOriginValidator(
             URLRouter(
                 [
                     # Aquí agregas tus rutas de WebSocket
