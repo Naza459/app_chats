@@ -7,6 +7,12 @@ class ConversationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Conversations
+        fields = ('id', 'user', 'client', 'messages', 'file')
+
+class ConversationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Conversations
         fields = ('__all__')
 
 

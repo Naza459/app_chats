@@ -66,6 +66,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:4200',
+    'http://localhost:3000',
 ]
 
 CHANNEL_LAYERS = {

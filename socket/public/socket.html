@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Chat</title>
+</head>
+
+<body>
+    <h1>Chat</h1>
+
+    <div id="messages"></div>
+
+    <form id="message-form">
+        <input type="text" id="message-input" placeholder="Escribe tu mensaje...">
+        <button type="submit">Enviar</button>
+    </form>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+    <script>
+        var socket = io('http://localhost:3000');
+
+        // Manejar evento de recepción de mensajes
+        socket.on('message', function (data) {
+            console.log('Mensaje recibido:', data);
+            // Procesar el mensaje recibido y mostrarlo en el HTML
+            var messageDiv = document.createElement('div');
+            messageDiv.textContent = data.message;
+            document.getElementById('messages').appendChild(messageDiv);
+        });
+
+        // Enviar mensaje al servidor Socket.IO cuando se envía el formulario
+        document.getElementById('message-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+            var messageInput = document.getElementById('message-input');
+            var message = messageInput.value;
+            messageInput.value = '';
+
+            // Enviar el mensaje al servidor Socket.IO
+            socket.emit('message', { message: message });
+        });
+    </script>
+</body>
+
+</html>

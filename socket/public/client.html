@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Chats de cliente</title>
+</head>
+
+<body>
+    <h1>Chats de cliente</h1>
+    <input type="text" id="mensajeInput" />
+    <button onclick="enviarMensaje()">Enviar</button>
+
+    <div id="client-chat-container"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js"></script>
+    <script>
+       const socket = io('http://localhost:3000/'); // Reemplaza 'https://socket.io/' con la URL de tu servidor Socket.IO
+
+        // Escucha el evento 'mensajeCliente' para recibir los chats del cliente
+        socket.on('mensajeCliente', function (data) {
+            // Actualiza el contenido del contenedor de chats del cliente
+            const clientChatContainer = document.getElementById('client-chat-container');
+            clientChatContainer.innerHTML += '<p>' + data.messages + '</p>'; // Puedes ajustar cómo se muestra la información del chat aquí
+        });
+
+        function enviarMensaje() {
+            const mensaje = document.getElementById('mensajeInput').value;
+            socket.emit('mensajeCliente', { messages: mensaje }); // Envía el mensaje al servidor con el evento 'mensajeCliente'
+        }
+    </script>
+</body>
+
+</html>

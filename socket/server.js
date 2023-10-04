@@ -1,29 +1,51 @@
 const express = require('express');
+const http = require('http');
+const socketIO = require('socket.io');
+const cors = require('cors');
+
 const app = express();
-const server = require('http').createServer(app);
-const io = require('socket.io')(server);
+const server = http.createServer(app);
+const io = socketIO(server);
 
-// Configurar eventos WebSocket
+// Middleware personalizado para agregar encabezados CORS
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8000'); // Reemplaza la URL con la correcta
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
+
+
+// Configura la ruta para la vista del usuario
+
+// Maneja la conexión de un cliente Socket.IO
 io.on('connection', (socket) => {
-  console.log('Cliente conectado al servidor WebSocket');
+  console.log('Cliente conectado');
 
-  // Escuchar eventos del cliente
-  socket.on('message', (message) => {
-    console.log('Mensaje recibido del cliente:', message);
-    // Procesar el mensaje recibido desde el cliente
+  // Maneja el evento de mensaje enviado desde el usuario
+  socket.on('mensajeUsuario', (mensaje) => {
+    console.log('Mensaje recibido del usuario:', mensaje);
 
-    // Enviar una respuesta al cliente
-    socket.emit('message', 'Respuesta del servidor WebSocket');
+    // Emite el mensaje al cliente
+    io.emit('mensajeCliente', mensaje);
   });
 
+  // Maneja el evento de mensaje enviado desde el cliente
+  socket.on('mensajeCliente', (mensaje) => {
+    console.log('Mensaje recibido del cliente:', mensaje);
+
+    // Emite el mensaje al usuario
+    io.emit('mensajeUsuario', mensaje);
+  });
+
+  // Maneja la desconexión de un cliente Socket.IO
   socket.on('disconnect', () => {
-    console.log('Cliente desconectado del servidor WebSocket');
+    console.log('Cliente desconectado');
   });
 });
 
-// Resto de tu código de configuración de Express
-
-// Iniciar el servidor
-server.listen(3000, () => {
-  console.log('Servidor Express en ejecución');
+// Inicia el servidor
+const port = 3000;
+server.listen(port, () => {
+  console.log(`Servidor Socket.IO en funcionamiento en el puerto ${port}`);
 });

@@ -78,6 +78,21 @@ class UserCustomer(AbstractBaseUser):
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name', 'password']
+    
+    def to_json(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'email': self.email,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'ci': self.ci,
+            'phone': self.phone,
+            'is_active': self.is_active,
+            'rol': self.rol_id,
+            'created': self.created.isoformat(),
+            'modified': self.modified.isoformat(),
+        }
 
     class Meta:
         db_table = 'usuarios'
@@ -99,6 +114,21 @@ class Client(models.Model):
     rol = models.ForeignKey(Roles,on_delete=models.CASCADE, null=True)
     created = models.DateTimeField(default=timezone.now, editable=False)
     modified = models.DateTimeField(default=timezone.now, editable=False)
+    
+    def to_json(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'email': self.email,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'ci': self.ci,
+            'phone': self.phone,
+            'is_active': self.is_active,
+            'rol': self.rol_id,
+            'created': self.created.isoformat(),
+            'modified': self.modified.isoformat(),
+        }
     
     class Meta:
         db_table = 'Clientes'
