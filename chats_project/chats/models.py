@@ -13,6 +13,8 @@ class Conversations(models.Model):
     file = models.TextField(null=True, blank=False)
     user = models.ForeignKey('users.UserCustomer', on_delete=models.PROTECT)
     client = models.ForeignKey('users.Client', on_delete=models.PROTECT)
+    is_closed = models.BooleanField(default=False)
+    identify = models.TextField(null=True)
     created = models.DateTimeField(default=timezone.now, editable=False)
     modified = models.DateTimeField(default=timezone.now, editable=False)
 
@@ -27,6 +29,8 @@ class HistoryConversations(models.Model):
     file = models.TextField(null=True, blank=False)
     user = models.ForeignKey('users.UserCustomer', on_delete=models.PROTECT)
     client = models.ForeignKey('users.Client', on_delete=models.PROTECT)
+    is_closed = models.BooleanField(default=False)
+    identify = models.TextField(null=True)
     created = models.DateTimeField(default=timezone.now, editable=False)
     modified = models.DateTimeField(default=timezone.now, editable=False)
 
@@ -43,6 +47,8 @@ def move_conversation_to_history(sender, instance, created, **kwargs):
             type_messages=instance.type_messages,
             file=instance.file,
             user=instance.user,
+            is_closed=instance.is_closed,
+            identify=instance.identify,
             client=instance.client,
             created=instance.created,
             modified=instance.modified

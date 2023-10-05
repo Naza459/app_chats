@@ -45,7 +45,7 @@ io.on('connection', (socket) => {
 });
 
 // Inicia el servidor
-const port = 3000;
+const port = 4000;
 server.listen(port, () => {
   console.log(`Servidor Socket.IO en funcionamiento en el puerto ${port}`);
 });

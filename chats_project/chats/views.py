@@ -1,7 +1,7 @@
 import urllib3
 import ssl
 import socketio
-
+import time
 from geventwebsocket.handler import WebSocketHandler
 from gevent.pywsgi import WSGIServer
 from socketio import Server
@@ -58,7 +58,7 @@ def connect_to_socket():
     global connected
     if not connected:
         try:
-            socketIO.connect('http://localhost:3000/')
+            socketIO.connect('http://localhost:4000/')
             connected = True
         except ConnectionError:
             # Manejar cualquier excepción de conexión aquí
@@ -73,18 +73,25 @@ class ConversacionsUsuarioViewSet(ModelViewSet):
 
         if serializer.is_valid():
             user_id = serializer.validated_data['user']
+            identify = serializer.validated_data['identify']
             client_id = serializer.validated_data.get('client')
 
             message = {
                 'messages': serializer.validated_data.get('messages'),
                 'type_messages': serializer.validated_data.get('type_messages'),
                 'file': serializer.validated_data.get('file'),
+                'identify': identify,
                 'user': user_id.to_json(),
                 'client': client_id.to_json()
             }
 
             response_data = None
             response_received = threading.Event()
+            
+            def on_disconnect():
+                print('Se ha perdido la conexión con el servidor Socket.IO. Intentando reconectar...')
+                time.sleep(5)  # Espera 5 segundos antes de intentar la reconexión
+                socketIO.connect()  # Intenta reconectar
 
             def on_response(data):
                 nonlocal response_data
@@ -100,9 +107,12 @@ class ConversacionsUsuarioViewSet(ModelViewSet):
             # Espera la respuesta del servidor Socket.IO durante 5 segundos
             response_received.wait(timeout=5)
 
-            # socketIO.disconnect()
-            # print('Entro por desconectar')
-
+            if serializer.validated_data.get('is_closed') == True:
+                #socketIO.disconnect()
+                serializer.save()
+                Conversations.objects.all().delete()
+                return Response(ConversationSerializer(instance=serializer.instance).data, status=status.HTTP_200_OK)
+                
             serializer.save()
 
             if response_data is not None:
@@ -112,7 +122,6 @@ class ConversacionsUsuarioViewSet(ModelViewSet):
                 return Response({'error': 'Tiempo de espera agotado'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 # ...
 
 
@@ -125,12 +134,14 @@ class ConversacionsClienteViewSet(ModelViewSet):
 
         if serializer.is_valid():
             user_id = serializer.validated_data['user']
+            identify = serializer.validated_data['identify']
             client_id = serializer.validated_data.get('client')
 
             message = {
                 'messages': serializer.validated_data.get('messages'),
                 'type_messages': serializer.validated_data.get('type_messages'),
                 'file': serializer.validated_data.get('file'),
+                'identify': identify,
                 'user': user_id.to_json(),
                 'client': client_id.to_json()
             }
@@ -154,7 +165,7 @@ class ConversacionsClienteViewSet(ModelViewSet):
 
             # socketIO.disconnect()
             # print('Entro por desconectar')
-
+                
             serializer.save()
 
             if response_data is not None:
