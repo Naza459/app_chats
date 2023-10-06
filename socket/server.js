@@ -20,27 +20,33 @@ app.use((req, res, next) => {
 
 // Maneja la conexión de un cliente Socket.IO
 io.on('connection', (socket) => {
-  console.log('Cliente conectado');
+  console.log("Cliente conectado", socket.id);
+
+  // Maneja el evento de unirse a una sala de chats
+  socket.on("join_room", (roomName) => {
+    console.log(`El cliente ${socket.id} se ha unido a la sala ${roomName}`);
+    socket.join(roomName);
+  });
 
   // Maneja el evento de mensaje enviado desde el usuario
-  socket.on('mensajeUsuario', (mensaje) => {
-    console.log('Mensaje recibido del usuario:', mensaje);
+  socket.on("mensajeUsuario", (mensaje) => {
+    console.log("Mensaje recibido del usuario:", mensaje);
 
     // Emite el mensaje al cliente
-    io.emit('mensajeCliente', mensaje);
+    io.emit("mensajeCliente", mensaje);
   });
 
   // Maneja el evento de mensaje enviado desde el cliente
-  socket.on('mensajeCliente', (mensaje) => {
-    console.log('Mensaje recibido del cliente:', mensaje);
+  socket.on("mensajeCliente", (mensaje) => {
+    console.log("Mensaje recibido del cliente:", mensaje);
 
     // Emite el mensaje al usuario
-    io.emit('mensajeUsuario', mensaje);
+    io.emit("mensajeUsuario", mensaje);
   });
 
   // Maneja la desconexión de un cliente Socket.IO
-  socket.on('disconnect', () => {
-    console.log('Cliente desconectado');
+  socket.on("disconnect", (socket) => {
+    console.log("Cliente desconectado", socket.id);
   });
 });
 

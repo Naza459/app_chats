@@ -7,12 +7,22 @@ from django.utils.timezone import localtime
 
 
 # Create your models here.
+class RoomChats(models.Model):
+    name = models.TextField(null=False, blank=False)
+    is_enabled = models.BooleanField(default = True)
+    created = models.DateTimeField(default=timezone.now, editable=False)
+    modified = models.DateTimeField(default=timezone.now, editable=False)
+    
+    class Meta:
+        db_table = 'sala-chats'
+        app_label = 'chats'
 class Conversations(models.Model):
     messages = models.TextField(null=False, blank=False)
     type_messages = models.TextField(null=False, blank=False)
     file = models.TextField(null=True, blank=False)
     user = models.ForeignKey('users.UserCustomer', on_delete=models.PROTECT)
     client = models.ForeignKey('users.Client', on_delete=models.PROTECT)
+    room = models.ForeignKey(RoomChats, null=True,on_delete=models.PROTECT)
     is_closed = models.BooleanField(default=False)
     identify = models.TextField(null=True)
     created = models.DateTimeField(default=timezone.now, editable=False)
@@ -29,6 +39,7 @@ class HistoryConversations(models.Model):
     file = models.TextField(null=True, blank=False)
     user = models.ForeignKey('users.UserCustomer', on_delete=models.PROTECT)
     client = models.ForeignKey('users.Client', on_delete=models.PROTECT)
+    room = models.ForeignKey(RoomChats, null=True,on_delete=models.PROTECT)
     is_closed = models.BooleanField(default=False)
     identify = models.TextField(null=True)
     created = models.DateTimeField(default=timezone.now, editable=False)
@@ -50,6 +61,7 @@ def move_conversation_to_history(sender, instance, created, **kwargs):
             is_closed=instance.is_closed,
             identify=instance.identify,
             client=instance.client,
+            room=instance.room,
             created=instance.created,
             modified=instance.modified
         )
