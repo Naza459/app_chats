@@ -13,6 +13,15 @@ class RoomChats(models.Model):
     created = models.DateTimeField(default=timezone.now, editable=False)
     modified = models.DateTimeField(default=timezone.now, editable=False)
     
+    def to_json(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'is_enabled': self.is_enabled,
+            'created': self.created.isoformat(),
+            'modified': self.modified.isoformat(),
+        }
+    
     class Meta:
         db_table = 'sala-chats'
         app_label = 'chats'

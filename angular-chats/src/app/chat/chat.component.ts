@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 
 @Component({
   selector: 'app-chat',
@@ -8,7 +8,7 @@ import { io } from 'socket.io-client';
   styleUrls: ['./chat.component.css']
 })
 export class ChatComponent implements OnInit {
-  socket: any;
+  socket: Socket | undefined;
   message: string | null = '';
   messages: string[] = [];
   chatsUsuario: any[] = [];
@@ -33,27 +33,28 @@ export class ChatComponent implements OnInit {
     this.message = target.value;
   }
 
-  enviarMensaje(message: string, type_messages: string, user: string, client: string) {
-  if (message) {
-    const urlCliente = 'http://127.0.0.1:8000/chats/chats_Cliente/';
-    const urlUsuario = 'http://127.0.0.1:8000/chats/chats_usuario/';
+  enviarMensaje(message: string, type_messages: string, user: number, client: number, room: number) {
+    if (message) {
+      const urlCliente = 'http://127.0.0.1:8000/chats/chats_Cliente/';
+      const urlUsuario = 'http://127.0.0.1:8000/chats/chats_usuario/';
 
-    const url = user === 'usuario' ? urlUsuario : urlCliente;
+      //const url = user === 'usuario' ? urlUsuario : urlCliente;
 
-    const body = {
-      messages: message,
-      type_messages: type_messages,
-      user: user,
-      client: client
-    };
+      const body = {
+        messages: message,
+        type_messages: type_messages,
+        user: user,
+        room: room,
+        client: client
+      };
 
-    this.http.post(url, body).subscribe((response: any) => {
-      // Maneja la respuesta aquí si es necesario
-    });
+      this.http.post(url, body).subscribe((response: any) => {
+        // Maneja la respuesta aquí si es necesario
+      });
 
-    this.message = '';
+      this.message = '';
+    }
   }
-}
 
   // Función para obtener los chats del usuario
   getChatsUsuario() {

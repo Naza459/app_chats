@@ -9,7 +9,7 @@ const io = socketIO(server);
 
 // Middleware personalizado para agregar encabezados CORS
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8000'); // Reemplaza la URL con la correcta
+  res.setHeader('Access-Control-Allow-Origin', '*'); // Reemplaza la URL con la correcta
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   next();
@@ -43,6 +43,14 @@ io.on('connection', (socket) => {
     // Emite el mensaje al usuario
     io.emit("mensajeUsuario", mensaje);
   });
+
+  // Maneja el evento de mensaje de escritura desde el usuario
+  socket.on("typing", (name) => {
+      console.log("Escribiendo:", name);
+
+      // Emite el mensaje al cliente
+      io.emit("typingCliente", name);
+    });
 
   // Maneja la desconexión de un cliente Socket.IO
   socket.on("disconnect", (socket) => {

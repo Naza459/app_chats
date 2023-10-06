@@ -75,7 +75,15 @@ class ConversacionsUsuarioViewSet(ModelViewSet):
         if serializer.is_valid():
             user_id = serializer.validated_data['user']
             identify = serializer.validated_data['identify']
+            room = serializer.validated_data['room']
             client_id = serializer.validated_data.get('client')
+            
+            conversation_exists = Conversations.objects.filter(
+                user=user_id, client=client_id).exists()
+            
+            if not conversation_exists:
+                return Response({'error': 'No esta permitido ingresar mas persona al chat'}, status=status.HTTP_400_BAD_REQUEST)
+
 
             message = {
                 'messages': serializer.validated_data.get('messages'),
@@ -83,6 +91,7 @@ class ConversacionsUsuarioViewSet(ModelViewSet):
                 'file': serializer.validated_data.get('file'),
                 'identify': identify,
                 'user': user_id.to_json(),
+                'room': room.to_json(),
                 'client': client_id.to_json()
             }
 
@@ -102,6 +111,7 @@ class ConversacionsUsuarioViewSet(ModelViewSet):
             connect_to_socket()
 
             socketIO.on('mensajeCliente', on_response)
+            socketIO.emit('typing', 'Escribiendo ....')
             socketIO.emit('mensajeUsuario', message)
             print('Emitió el mensaje')
 
@@ -146,6 +156,7 @@ class ConversacionsClienteViewSet(ModelViewSet):
                 'user': user_id.to_json(),
                 'client': client_id.to_json()
             }
+            
 
             response_data = None
             response_received = threading.Event()
@@ -159,6 +170,7 @@ class ConversacionsClienteViewSet(ModelViewSet):
 
             socketIO.on('mensajeUsuario', on_response)
             socketIO.emit('mensajeCliente', message)
+            
             print('Emitió el mensaje')
 
             # Espera la respuesta del servidor Socket.IO durante 5 segundos
@@ -226,8 +238,24 @@ class GetChatsUsuario(generics.ListAPIView):
         room_id = self.request.query_params.get('room_id')
         # Obtener la sala de chats correspondiente
         room = RoomChats.objects.get(id=room_id)
+        
+        @socketIO.on('connect', namespace='/connect')
+        def on_connect():
+            print('Cliente conectado')
+
+
+        @socketIO.on('disconnect', namespace='/disconnect')
+        def on_disconnect():
+            print('Cliente desconectado')
+
+
+        @socketIO.on('join_room', namespace='/join_room')
+        def on_join_room(room):
+            print('Cliente unido a la sala:', room)
+            socketIO.join_room(room.name, namespace='/join_room')
+        
         # Unirse a la sala correspondiente
-        socketIO.emit('join_room', room.name)
+        #socketIO.emit('join_room', room.name)
 
         response_received = threading.Event()
         response_data = None
@@ -237,9 +265,11 @@ class GetChatsUsuario(generics.ListAPIView):
             response_data = data
             response_received.set()
 
-        socketIO.on('mensajeCliente', on_new_message)
 
-        response_received.wait(timeout=5)
+        response_received.wait(timeout=3)
+        
+        socketIO.on('typing', on_join_room)
+        socketIO.on('mensajeCliente', on_new_message)
 
         if response_data:
             print('Mensaje en tiempo real recibido:', response_data)
@@ -268,11 +298,25 @@ class GetChatsCliente(generics.ListAPIView):
 
     def get(self, request, *args, **kwargs):
         connect_to_socket()
+        user_id = self.request.query_params.get('user_id')
         room_id = self.request.query_params.get('room_id')
         # Obtener la sala de chats correspondiente
         room = RoomChats.objects.get(id=room_id)
         # Unirse a la sala correspondiente
-        socketIO.emit('join_room', room.name)
+        
+        @socketIO.on('connect', namespace='/connect')
+        def on_connect():
+            print('Cliente conectado')
+
+        @socketIO.on('disconnect', namespace='/disconnect')
+        def on_disconnect():
+            print('Cliente desconectado')
+
+        @socketIO.on('join_room', namespace='/join_room')
+        def on_join_room(room):
+            print('Cliente unido a la sala:', room)
+            socketIO.join_room(room.name, namespace='/join_room')
+        
 
         response_received = threading.Event()
         response_data = None
@@ -281,7 +325,8 @@ class GetChatsCliente(generics.ListAPIView):
             nonlocal response_data
             response_data = data
             response_received.set()
-
+        
+        socketIO.on('typing', on_join_room)
         socketIO.on('mensajeUsuario', on_new_message)
         
 
@@ -292,7 +337,7 @@ class GetChatsCliente(generics.ListAPIView):
 
         # Realizar cualquier otra lógica necesaria para el procesamiento de la respuesta
 
-        socketIO.disconnect()
+        #socketIO.disconnect()
 
         queryset = self.get_queryset()  # Obtener el queryset
         serializer = self.get_serializer(queryset, many=True)
