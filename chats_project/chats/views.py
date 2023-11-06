@@ -40,8 +40,8 @@ from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 from rest_framework.views import APIView
 from rest_framework.authentication import TokenAuthentication
-from chats.models import Conversations, Catalogue, RoomChats
-from chats.serializers import ConversationSerializer, ConversationListSerializer, ConversationSerializer, RoomSerializer, RoomListSerializer
+from chats.models import Conversations, Catalogue
+from chats.serializers import ConversationSerializer, ConversationListSerializer, ConversationSerializer
 from chats.consumers import ConversationsConsumer
 from users.models import UserCustomer, Client, Roles
 from django.shortcuts import render
@@ -75,7 +75,6 @@ class ConversacionsUsuarioViewSet(ModelViewSet):
         if serializer.is_valid():
             user_id = serializer.validated_data['user']
             identify = serializer.validated_data['identify']
-            room = serializer.validated_data['room']
             client_id = serializer.validated_data.get('client')
             
             conversation_exists = Conversations.objects.filter(
@@ -91,7 +90,6 @@ class ConversacionsUsuarioViewSet(ModelViewSet):
                 'file': serializer.validated_data.get('file'),
                 'identify': identify,
                 'user': user_id.to_json(),
-                'room': room.to_json(),
                 'client': client_id.to_json()
             }
 
@@ -190,36 +188,6 @@ class ConversacionsClienteViewSet(ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class RoomChatsViewset(ModelViewSet):
-    #permission_classes = (IsAppAuthenticated, IsAppStaff, IsAuthenticated, IsCompanyPermission)
-    serializer_class = RoomListSerializer
-    queryset = RoomChats.objects.all()
-    filter_backends = (DjangoFilterBackend,)
-    ordering_fields = ('name',)
-    filter_fields = ('name',)
-    
-    def create(self, request, *args, **kwargs):
-        serializer = RoomSerializer(RoomChats(), data=request.data)
-
-        if serializer.is_valid():
-            serializer.save()
-
-            return Response(RoomListSerializer(instance=serializer.instance).data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def update(self, request, *args, **kwargs):
-        modulo_instance = self.get_object()
-
-        serializer = RoomListSerializer(instance=modulo_instance, data=request.data, partial=True)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(RoomListSerializer(instance=serializer.instance).data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 class GetChatsUsuario(generics.ListAPIView):
     
     serializer_class = ConversationSerializer
@@ -229,15 +197,13 @@ class GetChatsUsuario(generics.ListAPIView):
         client_id = self.request.query_params.get('client_id')
         # Obtener la sala de chats correspondiente
 
-        room = RoomChats.objects.get(id=room_id)
-        queryset = Conversations.objects.filter(client_id=client_id, room=room, identify='cliente')
+        queryset = Conversations.objects.filter(client_id=client_id,  identify='cliente')
         return queryset
 
     def get(self, request, *args, **kwargs):
         connect_to_socket()
         room_id = self.request.query_params.get('room_id')
         # Obtener la sala de chats correspondiente
-        room = RoomChats.objects.get(id=room_id)
         
         @socketIO.on('connect', namespace='/connect')
         def on_connect():
@@ -292,8 +258,7 @@ class GetChatsCliente(generics.ListAPIView):
         user_id = self.request.query_params.get('user_id')
         # Obtener la sala de chats correspondiente
         
-        room = RoomChats.objects.get(id=room_id)
-        queryset = Conversations.objects.filter(user_id=user_id, room=room, identify = 'usuario')
+        queryset = Conversations.objects.filter(user_id=user_id, identify = 'usuario')
         return queryset
 
     def get(self, request, *args, **kwargs):
@@ -301,7 +266,6 @@ class GetChatsCliente(generics.ListAPIView):
         user_id = self.request.query_params.get('user_id')
         room_id = self.request.query_params.get('room_id')
         # Obtener la sala de chats correspondiente
-        room = RoomChats.objects.get(id=room_id)
         # Unirse a la sala correspondiente
         
         @socketIO.on('connect', namespace='/connect')

@@ -2,13 +2,12 @@ from django.urls import re_path, path
 from rest_framework.routers import DefaultRouter
 
 
-from chats.views import ConversacionsUsuarioViewSet, ConversacionsClienteViewSet, RoomChatsViewset, GetChatsUsuario, GetChatsCliente
+from chats.views import ConversacionsUsuarioViewSet, ConversacionsClienteViewSet, GetChatsUsuario, GetChatsCliente
 
 router = DefaultRouter()
 
 router.register(r'chats_usuario', ConversacionsUsuarioViewSet)
 router.register(r'chats_Cliente', ConversacionsClienteViewSet)
-router.register(r'room', RoomChatsViewset)
 
 
 urlpatterns = [

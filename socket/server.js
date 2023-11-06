@@ -1,25 +1,24 @@
-const express = require('express');
-const http = require('http');
-const socketIO = require('socket.io');
-const cors = require('cors');
-
+const express = require("express");
 const app = express();
-const server = http.createServer(app);
-const io = socketIO(server);
+const http = require("http");
+const cors = require("cors");
+const socketIO = require("socket.io");
 
-// Middleware personalizado para agregar encabezados CORS
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*'); // Reemplaza la URL con la correcta
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  next();
+// Configura el servidor HTTP
+const server = http.createServer(app);
+
+// Configura CORS para permitir solicitudes desde cualquier origen (*)
+app.use(cors());
+
+// Inicializa Socket.IO y permite solicitudes CORS
+const io = socketIO(server, {
+  cors: {
+    origin: "*",
+  },
 });
 
-
-// Configura la ruta para la vista del usuario
-
 // Maneja la conexión de un cliente Socket.IO
-io.on('connection', (socket) => {
+io.on("connection", (socket) => {
   console.log("Cliente conectado", socket.id);
 
   // Maneja el evento de unirse a una sala de chats
@@ -46,19 +45,19 @@ io.on('connection', (socket) => {
 
   // Maneja el evento de mensaje de escritura desde el usuario
   socket.on("typing", (name) => {
-      console.log("Escribiendo:", name);
+    console.log("Escribiendo:", name);
 
-      // Emite el mensaje al cliente
-      io.emit("typingCliente", name);
-    });
+    // Emite el mensaje al cliente
+    io.emit("typingCliente", name);
+  });
 
   // Maneja la desconexión de un cliente Socket.IO
-  socket.on("disconnect", (socket) => {
+  socket.on("disconnect", () => {
     console.log("Cliente desconectado", socket.id);
   });
 });
 
-// Inicia el servidor
+// Inicia el servidor en el puerto 4000
 const port = 4000;
 server.listen(port, () => {
   console.log(`Servidor Socket.IO en funcionamiento en el puerto ${port}`);

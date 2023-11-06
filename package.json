@@ -4,7 +4,7 @@
   "description": "Aplicación web para atención al cliente por chats",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon app.js"
+    "start": "nodemon socket/server.js"
   },
   "repository": {
     "type": "git",
