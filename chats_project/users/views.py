@@ -42,37 +42,49 @@ class LoginViewSet(APIView):
         # Verificar si el usuario ya está autenticado
         #if request.user.is_authenticated:
         #    return Response({'message': 'El usuario ya está autenticado'}, status=status.HTTP_400_BAD_REQUEST)
+        
         try:
-            username = UserCustomer.objects.get(username=request.data.get("username"))
+            username = UserCustomer.objects.get(username=request.data.get("username"), rol = 1)
+            serializer_class = UserCustomerListSerializer
         except UserCustomer.DoesNotExist:
-            return Response({'message': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
-
+            try:
+                username = Client.objects.get(username=request.data.get("username"), rol = 2)
+                serializer_class = ClientListSerializer
+            except Client.DoesNotExist:
+                return Response({'message': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
+        
         password = username.password
-        print(username)
-        print(password)
+        
+        print('username: ', username.username)
+        print('password: ', password)
         print(username.last_login)
+        
+        
         
         if username.last_login is not None:
             return Response({'message': 'El usuario ya está autenticado'}, status=status.HTTP_400_BAD_REQUEST)
             
-
         if username and password and check_password(request.data["password"], password):
             username.last_login = timezone.now()
             username.save()
-            return Response({'access': True, 'data': UserCustomerListSerializer(instance=username).data}, status=status.HTTP_200_OK)
-        # Si no, devolver un mensaje de error
+            serializer = serializer_class(instance=username)
+            return Response({'access': True, 'data': serializer.data}, status=status.HTTP_200_OK)
         else:
             return Response({'message': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
-
 
 class LogoutView(APIView):
     authentication_classes = [TokenAuthentication]
 
     def post(self, request, id, *args, **kwargs): # Añadir el argumento id
         try:
-            user = UserCustomer.objects.get(id=id)
+            user_customer = UserCustomer.objects.get(id=id, rol=1)
+            user = user_customer
         except UserCustomer.DoesNotExist:
-            return Response({'message': 'El usuario no existe'}, status=status.HTTP_404_NOT_FOUND)
+            try:
+                client = Client.objects.get(id=id, rol = 2)
+                user = client
+            except Client.DoesNotExist:
+                return Response({'message': 'El usuario no existe'}, status=status.HTTP_404_NOT_FOUND)
 
         # Actualizar el campo is_online del usuario
         user.last_login = None

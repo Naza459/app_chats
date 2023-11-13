@@ -11,7 +11,7 @@ from django.utils.timezone import localtime
 class Conversations(models.Model):
     messages = models.TextField(null=False, blank=False)
     type_messages = models.TextField(null=False, blank=False)
-    file = models.TextField(null=True, blank=False)
+    file = models.FileField(null=True)
     user = models.ForeignKey('users.UserCustomer', on_delete=models.PROTECT)
     client = models.ForeignKey('users.Client', on_delete=models.PROTECT)
     is_closed = models.BooleanField(default=False)
@@ -27,7 +27,7 @@ class Conversations(models.Model):
 class HistoryConversations(models.Model):
     messages = models.TextField(null=False, blank=False)
     type_messages = models.TextField(null=False, blank=False)
-    file = models.TextField(null=True, blank=False)
+    file = models.FileField(null=True)
     user = models.ForeignKey('users.UserCustomer', on_delete=models.PROTECT)
     client = models.ForeignKey('users.Client', on_delete=models.PROTECT)
     is_closed = models.BooleanField(default=False)
