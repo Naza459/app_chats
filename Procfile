@@ -1,3 +1,4 @@
+cd chats_project/chats_project/
 web: gunicorn chats_project.wsgi
 
 # .env/bin/activate
