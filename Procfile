@@ -1,3 +1,4 @@
+pip install -r requirements.txt
 cd chats_project/chats_project/
 web: gunicorn chats_project.chats_project.wsgi
 
