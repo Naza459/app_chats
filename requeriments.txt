@@ -20,7 +20,10 @@ django-filter==23.3
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.0
 filelock==3.6.0
+gevent==23.9.1
+gevent-websocket==0.10.1
 googlemaps==4.10.0
+greenlet==3.0.0
 h11==0.14.0
 hyperlink==21.0.0
 idna==3.4
@@ -59,4 +62,5 @@ urllib3==2.0.3
 virtualenv==20.14.1
 websocket-client==1.6.3
 wsproto==1.2.0
+zope.event==5.0
 zope.interface==6.0
