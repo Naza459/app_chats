@@ -24,6 +24,7 @@ gevent==23.9.1
 gevent-websocket==0.10.1
 googlemaps==4.10.0
 greenlet==3.0.0
+gunicorn==21.2.0
 h11==0.14.0
 hyperlink==21.0.0
 idna==3.4
@@ -31,6 +32,7 @@ incremental==22.10.0
 legacy==0.1.6
 mysql-connector-python==8.0.29
 mysqlclient==2.1.0
+packaging==23.2
 Pillow==9.1.0
 platformdirs==2.5.2
 protobuf==3.20.1
