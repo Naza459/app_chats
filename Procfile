@@ -1,5 +1,6 @@
 #pip install -r requirements.txt
 #cd chats_project/chats_project/
+npm start
 web: python manage.py runserver
 
 # .env/bin/activate
