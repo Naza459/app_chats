@@ -10,4 +10,4 @@ npm install
 cd ..
 cd chats_project
 # python manage.py runserver
-web: source env/Script/gunicorn chats_project.chats_project.wsgi --log-file -
+web: env/Scripts/gunicorn chats_project.chats_project.wsgi --log-file -
