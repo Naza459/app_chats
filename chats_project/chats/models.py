@@ -58,8 +58,9 @@ def move_conversation_to_history(sender, instance, created, **kwargs):
         
 class Catalogue(models.Model):
     name = models.TextField(null=False, blank=False)
-    type_catalogue = models.TextField(null=False, blank=False)
+    type_catalogue = models.TextField(null=True, blank=False)
     amount = models.TextField()
+    images = models.ImageField(upload_to='img_catalogue/', null=True)
     is_enabled = models.BooleanField(default = True)
     created = models.DateTimeField(default=timezone.now, editable=False)
     modified = models.DateTimeField(default=timezone.now, editable=False)
