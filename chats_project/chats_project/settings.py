@@ -133,7 +133,7 @@ DATABASES = {
         'PASSWORD': '30804866',
         'HOST': 'localhost',
         #'HOST': '192.168.1.51',
-        'PORT': 3306,
+        'PORT': 3307,
     }
 }
 
