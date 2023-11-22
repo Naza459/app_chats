@@ -41,7 +41,7 @@ from rest_framework.serializers import Serializer
 from rest_framework.views import APIView
 from rest_framework.authentication import TokenAuthentication
 from chats.models import Conversations, Catalogue
-from chats.serializers import ConversationSerializer, ConversationListSerializer, ConversationSerializer
+from chats.serializers import ConversationSerializer, ConversationListSerializer, ConversationSerializer, CatalogueSerializer, CatalogueListSerializer
 from chats.consumers import ConversationsConsumer
 from users.models import UserCustomer, Client, Roles
 from django.shortcuts import render
@@ -306,3 +306,41 @@ class GetChatsCliente(generics.ListAPIView):
         queryset = self.get_queryset()  # Obtener el queryset
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class CatalogueViewSet(ModelViewSet):
+    #permission_classes = (IsAppAuthenticated, IsAppStaff, IsAuthenticated, IsCompanyPermission)
+    serializer_class = CatalogueListSerializer
+    queryset = Catalogue.objects.all()
+    filter_backends = (DjangoFilterBackend,)
+    ordering_fields = ('name',)
+    filter_fields = ('name',)
+    
+    def create(self, request, *args, **kwargs):
+        serializer = CatalogueSerializer(Catalogue(), data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(CatalogueListSerializer(instance=serializer.instance).data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, *args, **kwargs):
+        modulo_instance = self.get_object()
+
+        serializer = CatalogueListSerializer(instance=modulo_instance, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(CatalogueListSerializer(instance=serializer.instance).data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+class ReportCatalogueViewSet(ModelViewSet):
+    #permission_classes = (IsAppAuthenticated, IsAppStaff, IsAuthenticated, IsCompanyPermission)
+    serializer_class = CatalogueListSerializer
+    queryset = Catalogue.objects.all().order_by('id')
+    filter_backends = (DjangoFilterBackend,)
+    filter_fields = ('id', 'is_enabled', 'type_catalogue')
+    
